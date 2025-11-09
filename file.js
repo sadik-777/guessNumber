@@ -1,34 +1,36 @@
-document.getElementById('guess-button').document.addEventListener('click', function(e){
-    e.preventDefault();
-    let input1 = parseInt(document.getElementById('input1').value)
-    let input2 = parseInt(document.getElementById('input2').value)
-    let input3 = parseInt(document.getElementById('input3').value)
-    let input4 = parseInt(document.getElementById('input4').value)
-    let allInput = [input1, input2, input3, input4]
-    let resultat = document.getElementById('letRes')
-    let randomN1 = Math.floor(Math.random() * 10)
-    let randomN2 = Math.floor(Math.random() * 10)
-    let randomN3 = Math.floor(Math.random() * 10)
-    let randomN4 = Math.floor(Math.random() * 10)
-    let allRandom = [randomN1, randomN2, randomN3, randomN4]
-    if (allInput.some(num=> num = isNaN || num < 0 || num > 9)){
-        resultat.innerHTML = 'please enter a valid number between 0 and 9'
-        resultat.style.color = 'red'
+let random1 = Math.floor(Math.random() * 10)
+let random2 = Math.floor(Math.random() * 10)
+let random3 = Math.floor(Math.random() * 10)
+let random4 = Math.floor(Math.random() * 10)
+let allRandoms = [random1, random2, random3, random4]
+console.log(allRandoms)
+document.getElementById('guess-button').addEventListener('click', function(e){
+    e.preventDefault()
+    let input1 = document.getElementById('input1').value
+    let input2 = document.getElementById('input2').value
+    let input3 = document.getElementById('input3').value
+    let input4 = document.getElementById('input4').value
+    let res = document.getElementById('letRes')
+    let allInputs = [parseInt(input1), parseInt(input2), parseInt(input3), parseInt(input4)]
+    if(allInputs.some(num => isNaN(num) || num < 0 || num > 9)){
+        res.innerHTML = 'enter valid number beetween 0 and 9'
+        res.style.color = 'red'
         return
     }
+    
     let correctP = 0
     let wrongP = 0
     let positionN = [false, false, false, false]
-    for (let i = 0; i < 4; i++) {
-        if(allInput[i] === allRandom[i]){
+    for(let i = 0; i < 4; i ++){
+        if(allInputs[i] === allRandoms[i]){
             correctP ++
             positionN[i] = true
         }
     }
-    for(let i = 0; i < 4; i++){
-        if(allInput[i] !== allRandom[i]){
-            for(let j = 0; j < 4; j++){
-                if(!positionN[j] && allInput[i] === allRandom[i]){
+    for(let i = 0; i < 4; i ++){
+        if(allInputs[i] !== allRandoms[i]){
+            for(let j = 0; j < 4; j ++){
+                if(!positionN[j] && allInputs[i] === allRandoms[j]){
                     wrongP ++
                     positionN[j] = true
                     break
@@ -36,13 +38,11 @@ document.getElementById('guess-button').document.addEventListener('click', funct
             }
         }
     }
-    let resultText = `${correctP} correct position(s), ${wrongP} wrong position(s).`
     if(correctP === 4){
-        resultat.innerHTML = 'bravo'
-        resultat.style.color = 'green'
+        res.innerHTML = 'bravo'
+        res.style.color = 'green'
     }else{
-            resultat.innerHTML = resultText
-        resultat.style.color = 'orange'
+        res.innerText = `wrong position:${wrongP} && correct position: ${correctP}`
+        res.style.color = 'orange'
     }
-    
 })
