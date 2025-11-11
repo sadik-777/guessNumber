@@ -9,8 +9,6 @@ let button = document.getElementById('guess-button')
 button.addEventListener('click', function(e){
     e.preventDefault()
     tryN ++
-    let p = document.createElement('p')
-    
     if(tryN === 4){
         button.disabled = true
         button.innerText = 'Disable'
