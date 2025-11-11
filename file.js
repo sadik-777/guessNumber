@@ -13,7 +13,6 @@ button.addEventListener('click', function(e){
         button.disabled = true
         button.innerText = 'Disable'
         button.style.background = 'gray'
-        p.innerHTML = tryN
         alert('You end your try sorry u lose')
     }
     let input1 = document.getElementById('input1').value
