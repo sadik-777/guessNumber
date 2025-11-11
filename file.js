@@ -4,8 +4,20 @@ let random3 = Math.floor(Math.random() * 10)
 let random4 = Math.floor(Math.random() * 10)
 let allRandoms = [random1, random2, random3, random4]
 console.log(allRandoms)
-document.getElementById('guess-button').addEventListener('click', function(e){
+let tryN = 0
+let button = document.getElementById('guess-button')
+button.addEventListener('click', function(e){
     e.preventDefault()
+    tryN ++
+    let p = document.createElement('p')
+    
+    if(tryN === 4){
+        button.disabled = true
+        button.innerText = 'Disable'
+        button.style.background = 'gray'
+        p.innerHTML = tryN
+        alert('You end your try sorry u lose')
+    }
     let input1 = document.getElementById('input1').value
     let input2 = document.getElementById('input2').value
     let input3 = document.getElementById('input3').value
@@ -41,6 +53,7 @@ document.getElementById('guess-button').addEventListener('click', function(e){
     if(correctP === 4){
         res.innerHTML = 'bravo'
         res.style.color = 'green'
+        alert('You Win ✅')
     }else{
         res.innerText = `wrong position:${wrongP} && correct position: ${correctP}`
         res.style.color = 'orange'
