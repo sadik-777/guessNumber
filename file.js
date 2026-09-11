@@ -5,8 +5,10 @@ console.log('Secret Code:', allRandoms.join('')); // For debugging/cheating
 let tryN = 0;
 const maxTries = 4;
 let button = document.getElementById('guess-button');
+let stopButton = document.getElementById('stop-button');
 let res = document.getElementById('letRes');
 let triesDisplay = document.getElementById('tries-display');
+let timerDisplay = document.getElementById('timer');
 let inputs = [
     document.getElementById('input1'),
     document.getElementById('input2'),
@@ -14,23 +16,52 @@ let inputs = [
     document.getElementById('input4')
 ];
 
+let timeLeft = 60;
+let timerInterval;
+let gameActive = true;
+
+// Start Timer
+function startTimer() {
+    timerInterval = setInterval(() => {
+        if (!gameActive) return;
+        
+        timeLeft--;
+        let minutes = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        let seconds = (timeLeft % 60).toString().padStart(2, '0');
+        timerDisplay.innerText = `${minutes}:${seconds}`;
+        
+        if (timeLeft <= 10) {
+            timerDisplay.classList.add('timer-danger');
+        }
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            endGame(false, 'TIME EXPIRED');
+        }
+    }, 1000);
+}
+startTimer();
+
 // UI helpers
 const showMessage = (msg, type) => {
     res.innerHTML = msg;
     res.className = `show status-${type}`;
+    if (window.trigger3DFeedback) {
+        window.trigger3DFeedback(type);
+    }
 };
 
-const showModal = (isWin) => {
+const showModal = (isWin, titleOverride) => {
     const modal = document.getElementById('result-modal');
     const title = document.getElementById('modal-title');
     const desc = document.getElementById('modal-desc');
     
     if (isWin) {
-        title.innerHTML = 'Access Granted!';
+        title.innerHTML = titleOverride || 'Access Granted!';
         title.className = 'win-text';
-        desc.innerText = 'You successfully cracked the code.';
+        desc.innerText = `You successfully cracked the code with ${timeLeft} seconds left.`;
     } else {
-        title.innerHTML = 'Access Denied';
+        title.innerHTML = titleOverride || 'Access Denied';
         title.className = 'lose-text';
         desc.innerText = `The correct code was ${allRandoms.join('')}.`;
     }
@@ -38,28 +69,40 @@ const showModal = (isWin) => {
     modal.classList.add('active');
 };
 
+window.closeModal = () => {
+    document.getElementById('result-modal').classList.remove('active');
+};
+
+const endGame = (isWin, titleOverride) => {
+    gameActive = false;
+    clearInterval(timerInterval);
+    button.disabled = true;
+    stopButton.disabled = true;
+    inputs.forEach(input => input.disabled = true);
+    
+    if (!isWin) {
+        button.innerText = 'System Locked';
+        showMessage('Lockout Initiated ❌', 'error');
+    }
+    setTimeout(() => showModal(isWin, titleOverride), 500);
+};
+
 // Auto-advance inputs for better UX
 inputs.forEach((input, index) => {
     input.addEventListener('input', (e) => {
-        // Ensure only one digit
         if (input.value.length > 1) {
             input.value = input.value.slice(-1);
         }
-        
-        // Auto-advance
         if (input.value !== '' && index < inputs.length - 1) {
             inputs[index + 1].focus();
         }
     });
 
     input.addEventListener('keydown', (e) => {
-        // Allow backspace to go to previous input
         if (e.key === 'Backspace' && input.value === '' && index > 0) {
             inputs[index - 1].focus();
             inputs[index - 1].value = '';
         }
-        
-        // Allow Enter to submit
         if (e.key === 'Enter') {
             button.click();
         }
@@ -68,10 +111,10 @@ inputs.forEach((input, index) => {
 
 button.addEventListener('click', function(e) {
     e.preventDefault();
+    if (!gameActive) return;
     
     let allInputs = inputs.map(input => parseInt(input.value));
     
-    // Validate inputs
     if (allInputs.some(num => isNaN(num) || num < 0 || num > 9)) {
         showMessage('Please enter a number between 0 and 9 in all boxes.', 'error');
         return;
@@ -85,7 +128,7 @@ button.addEventListener('click', function(e) {
     let wrongP = 0;
     let positionN = [false, false, false, false];
     
-    // First pass: Find correct positions
+    // First pass
     for (let i = 0; i < 4; i++) {
         if (allInputs[i] === allRandoms[i]) {
             correctP++;
@@ -93,7 +136,7 @@ button.addEventListener('click', function(e) {
         }
     }
     
-    // Second pass: Find wrong positions (correct number, wrong place)
+    // Second pass
     for (let i = 0; i < 4; i++) {
         if (allInputs[i] !== allRandoms[i]) {
             for (let j = 0; j < 4; j++) {
@@ -108,22 +151,24 @@ button.addEventListener('click', function(e) {
     
     if (correctP === 4) {
         showMessage('Access Granted! ✅', 'success');
-        button.disabled = true;
-        setTimeout(() => showModal(true), 500); // Small delay before modal
+        endGame(true);
     } else {
         if (tryN >= maxTries) {
-            showMessage('Lockout Initiated ❌', 'error');
-            button.disabled = true;
-            button.innerText = 'System Locked';
-            setTimeout(() => showModal(false), 500);
+            endGame(false, 'OUT OF ATTEMPTS');
         } else {
             showMessage(`🎯 Correct position: ${correctP} <br> 🔄 Wrong position: ${wrongP}`, 'warning');
             
-            // Clear inputs and focus first for next try
             setTimeout(() => {
                 inputs.forEach(input => input.value = '');
                 inputs[0].focus();
             }, 1000);
         }
     }
+});
+
+stopButton.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (!gameActive) return;
+    
+    endGame(false, 'GAME STOPPED');
 });
